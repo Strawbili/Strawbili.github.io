@@ -23,19 +23,78 @@
             background-color: #fff;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
-        iframe {
+        #pdf-canvas {
             width: 100%;
-            height: 100%;
-            border: none;
+            height: auto;
+        }
+        .controls {
+            text-align: center;
+            margin: 10px;
+        }
+        .btn {
+            padding: 5px 10px;
+            margin: 5px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- 使用 iframe 嵌入 PDF -->
-        <iframe src="https://github.com/Strawbili/Strawbili.github.io/raw/main/Resume-Yuhan%20Liu.pdf" width="100%" height="100%"></iframe>
+        <canvas id="pdf-canvas"></canvas>
+        <div class="controls">
+            <button class="btn" id="prev">上一页</button>
+            <button class="btn" id="next">下一页</button>
+        </div>
     </div>
 
+    <!-- 引入 PDF.js 库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.8.0/pdf.min.js"></script>
+    <script>
+        const url = 'https://github.com/Strawbili/Strawbili.github.io/raw/main/Resume-Yuhan%20Liu.pdf';  // GitHub 上的 PDF 文件路径
+        let currentPage = 1;
+        let pdfDoc = null;
+
+        // 加载 PDF 文件
+        pdfjsLib.getDocument(url).promise.then(function(pdf) {
+            pdfDoc = pdf;
+            renderPage(currentPage);
+        });
+
+        // 渲染页面
+        function renderPage(pageNum) {
+            pdfDoc.getPage(pageNum).then(function(page) {
+                const scale = 1.5;
+                const viewport = page.getViewport({ scale: scale });
+
+                const canvas = document.getElementById('pdf-canvas');
+                const context = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+
+                // 渲染 PDF 页面到 canvas
+                page.render({
+                    canvasContext: context,
+                    viewport: viewport
+                });
+            });
+        }
+
+        // 控制按钮
+        document.getElementById('prev').addEventListener('click', function() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderPage(currentPage);
+            }
+        });
+
+        document.getElementById('next').addEventListener('click', function() {
+            if (currentPage < pdfDoc.numPages) {
+                currentPage++;
+                renderPage(currentPage);
+            }
+        });
+    </script>
 </body>
 </html>
+
